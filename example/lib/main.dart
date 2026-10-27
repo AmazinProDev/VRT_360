@@ -11,7 +11,6 @@ import 'package:image_picker/image_picker.dart';
 import 'vr_view_screen.dart';
 
 void main() {
-  Amz360.instance.setClient("1p7g4RrCOpQM2ze4rki1j4KvK");
   runApp(const MyApp());
 }
 
@@ -32,7 +31,69 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: SignInScreen(),
+    );
+  }
+}
+
+/// Sign in with a VirtualTour account; the SDK keeps and refreshes the tokens.
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  String? error;
+  bool busy = false;
+
+  Future<void> _signIn() async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await Amz360.instance.login(
+          email: emailController.text.trim(),
+          password: passwordController.text);
+      if (!mounted) return;
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } catch (e) {
+      setState(() => error = e.toString().replaceFirst("Exception: ", ""));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Sign in")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: "Email")),
+            TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Password")),
+            const SizedBox(height: 16),
+            if (error != null)
+              Text(error!, style: const TextStyle(color: Colors.red)),
+            ElevatedButton(
+                onPressed: busy ? null : _signIn,
+                child: Text(busy ? "Signing in..." : "Sign in")),
+          ],
+        ),
+      ),
     );
   }
 }

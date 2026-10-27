@@ -11,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 enum HotspotType { text, image, video, link }
 
 class ViewVR extends StatefulWidget {
-  final int id;
+  final String id;
   const ViewVR({Key? key, required this.id}) : super(key: key);
 
   @override
@@ -29,7 +29,7 @@ class _ViewVRState extends State<ViewVR> {
       StreamController.broadcast();
   StreamController<File?> selectVideoHotspotController =
       StreamController.broadcast();
-  StreamController<int?> tOtherImageIdController = StreamController.broadcast();
+  StreamController<String?> tOtherImageIdController = StreamController.broadcast();
   StreamController<bool> progressDialogController =
       StreamController.broadcast();
   StreamController<double?> progressDialogValueController =
@@ -38,7 +38,7 @@ class _ViewVRState extends State<ViewVR> {
   bool isDeleting = false;
   File? file;
   File? video;
-  int? toImageId;
+  String? toImageId;
   bool isEnableControl = true;
   bool isEnableSensorControl = false;
 
@@ -492,7 +492,7 @@ class _ViewVRState extends State<ViewVR> {
                                     }
                                   }),
                             if (type == HotspotType.link)
-                              StreamBuilder<int?>(
+                              StreamBuilder<String?>(
                                   initialData: null,
                                   stream: tOtherImageIdController.stream,
                                   builder: (context, snapshot) {

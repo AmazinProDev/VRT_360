@@ -29,21 +29,22 @@ class ResponseVtListProject {
 }
 
 class VTProjectOnList {
-  int? id;
+  String? id;
   String? slug;
   String? title;
   String? describe;
+  /// The first image, as the cover
   VTImageDetails? images;
 
   VTProjectOnList({this.id, this.slug, this.title, this.describe, this.images});
 
   VTProjectOnList.fromJson(Map<String, dynamic> json) {
-    id = json["id"];
+    id = json["id"]?.toString();
     slug = json["slug"];
     title = json["title"];
     describe = json["describe"];
-    images =
-        json["images"] == null ? null : VTImageDetails.fromJson(json["images"]);
+    final list = json["images"] as List?;
+    images = list == null || list.isEmpty ? null : VTImageDetails.fromJson(list.first);
   }
 
   Map<String, dynamic> toJson() {

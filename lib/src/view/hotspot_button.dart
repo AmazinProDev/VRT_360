@@ -60,7 +60,8 @@ class _HotspotButtonState extends State<HotspotButton>
     scaleAnimation = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(parent: controller, curve: Curves.easeOutQuart));
     if (widget.videoUrl != null) {
-      _videoController = VideoPlayerController.network(widget.videoUrl!)
+      _videoController =
+          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!))
         ..initialize().then((_) {
           initVideoController.add(true);
         });
@@ -118,28 +119,28 @@ class _HotspotButtonState extends State<HotspotButton>
                             children: [
                               Html(data: widget.title ?? "", style: {
                                 "body": Style(
-                                    padding: EdgeInsets.zero,
-                                    margin: EdgeInsets.zero,
+                                    padding: HtmlPaddings.zero,
+                                    margin: Margins.zero,
                                     color: Colors.white,
-                                    fontSize: const FontSize(16),
+                                    fontSize: FontSize(16),
                                     fontWeight: FontWeight.w600),
                                 "p": Style(
-                                  padding: EdgeInsets.zero,
-                                  margin: EdgeInsets.zero,
+                                  padding: HtmlPaddings.zero,
+                                  margin: Margins.zero,
                                 )
                               }),
                               const SizedBox(height: 10),
                               if (widget.descriptions != null)
                                 Html(data: widget.descriptions ?? "", style: {
                                   "body": Style(
-                                    padding: EdgeInsets.zero,
-                                    margin: EdgeInsets.zero,
+                                    padding: HtmlPaddings.zero,
+                                    margin: Margins.zero,
                                     color: Colors.white,
-                                    fontSize: const FontSize(14),
+                                    fontSize: FontSize(14),
                                   ),
                                   "p": Style(
-                                    padding: EdgeInsets.zero,
-                                    margin: EdgeInsets.zero,
+                                    padding: HtmlPaddings.zero,
+                                    margin: Margins.zero,
                                   )
                                 }),
                               if (widget.imageUrl != null)

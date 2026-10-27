@@ -1,26 +1,28 @@
 name: amz_360
-description: A new flutter plugin project.
-version: 0.0.1
+description: 360° image viewer and client of the VirtualTour API.
+version: 2.0.0
 homepage:
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=1.20.0"
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  vector_math: ^2.1.0
-  path: ^1.8.0
-  collection: ^1.15.0
-  dio: ^4.0.4
-  video_player: ^2.2.15
-  flutter_html: ^2.2.1
+  vector_math: ^2.1.4
+  path: ^1.8.3
+  collection: ^1.17.0
+  dio: ^5.7.0
+  video_player: ^2.9.0
+  flutter_html: ^3.0.0
+  # flutter_html 3.0.0 calls html's query_selector matches(), gone in html 0.15.7
+  html: ">=0.15.5 <0.15.7"
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   plugin:

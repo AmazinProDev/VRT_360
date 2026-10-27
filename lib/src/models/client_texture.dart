@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ClientTexture {
-  final int? idImage;
+  final String? idImage;
   ImageStream? imageStream;
   ImageInfo? imageInfo;
   ImageStreamListener? listener;

@@ -35,7 +35,7 @@ enum Amz360ViewType {
 class Amz360View extends _Amz360Scence {
   const Amz360View.client(
       {Key? key,
-      required int id,
+      required String id,
       Widget? textHotspotIcon,
       Widget? imageHotspotIcon,
       Widget? videoHotspotIcon,
@@ -141,7 +141,7 @@ class Amz360View extends _Amz360Scence {
 class _Amz360Scence extends StatefulWidget {
   final bool fromClient;
 
-  final int? idProject;
+  final String? idProject;
 
   /// The initial zoom, default to 1.0.
   final double zoom;
@@ -325,7 +325,7 @@ class _Amz360ScenceState extends State<_Amz360Scence>
     _controller.repeat();
   }
 
-  _getProject(int? idProject) async {
+  _getProject(String? idProject) async {
     setState(() {
       vtProject = null;
     });
@@ -498,8 +498,7 @@ class _Amz360ScenceState extends State<_Amz360Scence>
                 callbackDeleteLable: () async {
                   if (hotspot is VTHotspotLable) {
                     await Amz360.instance
-                        .deleteHotspotLable(
-                            imageId: hotspot.imageId!, hotspotId: hotspot.id!)
+                        .deleteHotspotLable(hotspotId: hotspot.id!)
                         .then((v) {
                       if (v) {
                         vtProject!.currentImage!.label!
@@ -510,9 +509,7 @@ class _Amz360ScenceState extends State<_Amz360Scence>
                     });
                   } else if (hotspot is VTHotspotLink) {
                     await Amz360.instance
-                        .deleteHotspotToOtherImage(
-                            imageId: vtProject!.currentImage!.image!.id!,
-                            hotspotId: hotspot.id!)
+                        .deleteHotspotToOtherImage(hotspotId: hotspot.id!)
                         .then((v) {
                       if (v) {
                         vtProject!.currentImage!.link!

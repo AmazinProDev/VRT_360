@@ -25,24 +25,41 @@ class ResponseVtProject {
 }
 
 class VTProject {
-  int? id;
+  String? id;
+  String? slug;
   String? title;
   String? description;
+
+  /// Full name of the user who made it
   String? author;
   List<VTImage>? images;
   VTImage? currentImage;
 
-  VTProject({this.id, this.title, this.description, this.author, this.images});
+  VTProject(
+      {this.id,
+      this.slug,
+      this.title,
+      this.description,
+      this.author,
+      this.images});
 
   VTProject.fromJson(Map<String, dynamic> json) {
-    id = json["id"];
+    id = json["id"]?.toString();
+    slug = json["slug"];
     title = json["title"];
-    description = json["description"];
-    author = json["author"];
+    description = json["describe"];
+    author = json["owner"] is Map ? json["owner"]["fullName"] : null;
     images = json["images"] == null
         ? null
         : (json["images"] as List).map((e) => VTImage.fromJson(e)).toList();
     if (images != null) {
+      // Linkspots name the image they open by URL; the viewer moves by id
+      final idOfUrl = {for (final i in images!) i.image?.url: i.image?.id};
+      for (final image in images!) {
+        for (final link in image.link ?? <VTHotspotLink>[]) {
+          link.toImage ??= idOfUrl[link.url];
+        }
+      }
       if (images!.isNotEmpty) {
         currentImage = images![0];
       }
@@ -74,9 +91,9 @@ class VTImage {
   Map<String, dynamic>? totalHospot;
   VTImage({this.image, this.label, this.link});
 
+  /// One image of the project as the API gives it: id, url, thumbnail_url, label, link
   VTImage.fromJson(Map<String, dynamic> json) {
-    image =
-        json["image"] == null ? null : VTImageDetails.fromJson(json["image"]);
+    image = VTImageDetails.fromJson(json);
     label = json["label"] == null
         ? null
         : (json["label"] as List)
@@ -86,13 +103,11 @@ class VTImage {
         ? null
         : (json["link"] as List).map((e) => VTHotspotLink.fromJson(e)).toList();
     totalHospot = {};
-    if (label != null && link != null) {
-      for (var i = 0; i < label!.length; i++) {
-        totalHospot!['label$i'] = label![i];
-      }
-      for (var i = 0; i < link!.length; i++) {
-        totalHospot!['link$i'] = link![i];
-      }
+    for (var i = 0; i < (label?.length ?? 0); i++) {
+      totalHospot!['label$i'] = label![i];
+    }
+    for (var i = 0; i < (link?.length ?? 0); i++) {
+      totalHospot!['link$i'] = link![i];
     }
   }
 
@@ -108,7 +123,7 @@ class VTImage {
   }
 
   addLink(VTHotspotLink l) {
-    if (label != null) {
+    if (link != null) {
       totalHospot!['link${link!.length}'] = l;
       link!.add(l);
     } else {
@@ -134,16 +149,16 @@ class VTImage {
 }
 
 class VTImageDetails {
-  int? id;
+  String? id;
   String? url;
   String? thumbnailUrl;
 
   VTImageDetails({this.id, this.url, this.thumbnailUrl});
 
   VTImageDetails.fromJson(Map<String, dynamic> json) {
-    id = json["id"];
-    url = json["url"].toString().replaceAll("https", "http");
-    thumbnailUrl = json["thumbnail_url"].toString().replaceAll("https", "http");
+    id = json["id"]?.toString();
+    url = json["url"]?.toString();
+    thumbnailUrl = json["thumbnail_url"]?.toString();
   }
 
   Map<String, dynamic> toJson() {

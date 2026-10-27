@@ -4,7 +4,7 @@ AMZ 360 is a plugin that provides a 360 degree image visualizer in Flutter.
 
 * Display via Assets.
 * Display via URL.
-* Display via Client of [Modernbiztech](https://www.modernbiztech.com/).
+* Display and edit the tours of a VirtualTour account (sign in, projects, infospots, linkspots).
 
 # Screenshot
  **Overview**
@@ -22,8 +22,8 @@ In `pubspec.yaml` add to `dependencies`:
 dependencies:
     amz_360:
         git:
-            url: git@github.com:MHunga/amz_360.git
-            ref: 1.0.4 #(version)
+            url: git@github.com:AmazinProDev/VRT_360.git
+            ref: 2.0.0 #(version)
 ```
 * **Android**: `minSdkVersion 19` and add support for `androidx` (see [AndroidX Migration](https://flutter.dev/docs/development/androidx-migration))
 * **iOS**: `--ios-language swift`, Xcode version `>= 11`
@@ -59,145 +59,136 @@ Amz360View.url(
         )
 ```
 
-* To display 360 image from client
+* To display and edit the tours of a VirtualTour account
 
-1. Create new account from [Modernbiztech](https://www.modernbiztech.com/).
+The SDK calls the VirtualTour API (`https://apivirtualtour.amazinsolution.com/api/v1`; change it with `Amz360.instance.setBaseUrl(...)`). Ids are strings (UUIDs).
 
-2. Get a `apiKey` from your account
-
-3. Set `apiKey` to client
+1. Sign in with a VirtualTour account. The SDK sends the access token with every call and refreshes it by itself when it expires.
 
 ```dart
-void main() {
-  Amz360.instance.setClient("your-api-key");
-  runApp(const MyApp());
-}
+final user = await Amz360.instance.login(email: email, password: password);
+// or, with the ID token of a Firebase Google / Apple sign-in:
+await Amz360.instance.loginWithGoogle(idToken: idToken);
+await Amz360.instance.loginWithApple(idToken: idToken);
 ```
-4. To create new project:
+
+To stay signed in across launches, keep the tokens and give them back:
 
 ```dart
-await Amz360.instance
-                  .create(
-                title: "This is title of project",
-                descrition: "This is descriptions of project",
-                images: listfile,
-                progressCallback: (sentBytes, totalBytes) {
-                  print("Progress: $sentBytes/$totalBytes");
-                },
-              )
+Amz360.instance.onTokensChanged = (access, refresh) {
+  // save both (null, null after logout)
+};
+Amz360.instance.setTokens(accessToken: savedAccess, refreshToken: savedRefresh);
 ```
 
-5. To get all created projects on your account:
+Sign out:
+
+```dart
+await Amz360.instance.logout();
+```
+
+2. To create new project (the title must be unique):
+
+```dart
+await Amz360.instance.create(
+  title: "This is title of project",
+  descrition: "This is descriptions of project",
+  images: listfile,
+  progressCallback: (sentBytes, totalBytes) {
+    print("Progress: $sentBytes/$totalBytes");
+  },
+);
+```
+
+3. To get all your projects:
 
 ```dart
 final data = await Amz360.instance.getListProject();
-print(data!.data![0].id);
+print(data.data![0].id);
 ```
 
-6. To display a created project
+4. To display a project
 
 ```dart
 Amz360View.client(
-          id: id, // id of project
-          autoRotationSpeed: 0.0,
-          enableSensorControl: true,
-          showControl: true,
-          onTap: (x, y, idImage) {
-            log("$x   $y");
-          },
-          onLongPressStart: (x, y, idImage) async {
-            log("$x   $y");
-          },
-        )
+  id: id, // id of the project
+  autoRotationSpeed: 0.0,
+  enableSensorControl: true,
+  showControl: true,
+  onTap: (x, y, project) {
+    log("$x   $y");
+  },
+  onLongPressStart: (x, y, project) async {
+    log("$x   $y");
+  },
+)
 ```
-7. Update info project
+
+5. Update the title and description (both are needed):
 
 ```dart
-await Amz360.instance.updateProject(
-  idProject: id, 
+await Amz360.instance.updateInfoProject(
+  idProject: id,
   title: "New title",
   description: "New description");
 ```
 
-8. Upload image to project
+6. Upload images to a project:
 
 ```dart
-await Amz360.instance
-            .uploadImageToProject(
-          idProject: id,
-          images: listImage,
-          progressCallback: (sentBytes, totalBytes) {
-            print(sentBytes / totalBytes);
-          },
-        );
+await Amz360.instance.uploadImageToProject(
+  idProject: id,
+  images: listImage,
+  progressCallback: (sentBytes, totalBytes) {
+    print(sentBytes / totalBytes);
+  },
+);
 ```
 
-
-9. Delete a image from project
+7. Delete an image (and its hotspots) from a project:
 
 ```dart
-await Amz360.instance
-            .deleteImageFromProject(
-          idProject: id,
-          idImage: idImage,
-        );
+await Amz360.instance.deleteImageFromProject(idProject: id, idImage: idImage);
 ```
 
-10. Delete project
+8. Delete a project:
 
 ```dart
 await Amz360.instance.deleteProject(id: id);
 ```
 
-11. Add Lable Hotspot to project: 
-    
-    - Example: 
-      ```dart
-      ...
-         onLongPressStart: (x, y, idImage) async {
-            log("$x   $y");
-            await Amz360.instance.addHotspotLable(
-                idImage: idImage!, title: "TESST", text: "Tessst", x: x, y: y);
-          },
-          ...
-      ```
+9. Add an infospot (text, one or more images, or a video) where the user pressed:
 
-    - Add text hotspot: Need to pass `text` value , 
+```dart
+onLongPressStart: (x, y, project) async {
+  await Amz360.instance.addHotspotLable(
+    idImage: project!.currentImage!.image!.id!,
+    title: "Title",
+    text: "Text",        // or images: [file1, file2], or video: videoFile
+    x: x,
+    y: y);
+},
+```
 
-       ```dart
-            await Amz360.instance.addHotspotLable(
-                idImage: idImage!, title: "TESST", text: "Tessst", x: x, y: y);
-      ```
+10. Add a linkspot that opens another image of the same project (read the project first, as `Amz360View.client` does); `title` shows on hover on the website, "Go to Scene N" when left out:
 
-    - Add image hotspot: Need to pass `image` value , 
+```dart
+await Amz360.instance.addHotspotToOtherImage(
+  idImage: project.currentImage!.image!.id!,
+  toImageId: otherImageId,
+  title: "Kitchen",
+  x: x,
+  y: y);
+```
 
-       ```dart
-            await Amz360.instance.addHotspotLable(
-                idImage: idImage!, title: "TESST", image: file, x: x, y: y);
-      ```  
+11. Delete a hotspot: set `showControl: true`, press and hold the hotspot icon, then press Delete. In code:
 
-    - Add video hotspot: Need to pass `video` value , 
+```dart
+await Amz360.instance.deleteHotspotLable(hotspotId: id);
+await Amz360.instance.deleteHotspotToOtherImage(hotspotId: id);
+```
 
-       ```dart
-            await Amz360.instance.addHotspotLable(
-                idImage: idImage!, title: "TESST", video: video, x: x, y: y);
-      ```
-
-12. Add the Hotspot to go to other image of project: 
-
-    ```dart
-     await Amz360.instance.addHotspotToOtherImage(
-                              idImage: projectInfo!.currentImage!.image!.id!,
-                              toImageId: toImageId!,
-                              x: x,
-                              y: y);
-    ```
-
- 13. Delete Hotspot:
-    Just set `enableControl : true`
-    Press and hold the hotspot icon to show the Delete button
-    Press to delete   
-
+Errors: every call takes `onError: (statusCode, message) {...}` and also throws an `Exception` with the message.
 
 ## Basic properties
 
